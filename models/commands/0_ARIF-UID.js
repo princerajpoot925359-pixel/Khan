@@ -1,17 +1,65 @@
 module.exports.config = {
-	name: "uid",
-	version: "1.0.0",
-	hasPermssion: 0,
-	credits: "𝐏𝐫𝐢𝐲𝐚𝐧𝐬𝐡 𝐑𝐚𝐣𝐩𝐮𝐭",
-	description: "Get User ID.",
-	commandCategory: "Tools",
-	cooldowns: 5
+  name: "uid",
+  version: "1.3.0",
+  hasPermssion: 0,
+  credits: "ARIF BABU",
+  description: "Get User ID (self / mention / reply)",
+  commandCategory: "Tools",
+  cooldowns: 5
 };
 
-module.exports.run = function({ api, event }) {
-	if (Object.keys(event.mentions) == 0) return api.sendMessage(`${event.senderID}`, event.threadID, event.messageID);
-	else {
-		for (var i = 0; i < Object.keys(event.mentions).length; i++) api.sendMessage(`${Object.values(event.mentions)[i].replace('@', '')}: ${Object.keys(event.mentions)[i]}`, event.threadID);
-		return;
-	}
+// 🔒 CREATOR NAME LOCK
+function checkCredits(api, event) {
+  if (module.exports.config.credits !== "ARIF BABU") {
+    api.sendMessage(
+      "❌ This command is locked.\nCreator: ARIF BABU",
+      event.threadID,
+      event.messageID
+    );
+    return false;
+  }
+  return true;
 }
+
+module.exports.run = function ({ api, event }) {
+
+  // 🔐 CREDIT CHECK
+  if (!checkCredits(api, event)) return;
+
+  if (event.type === "message_reply" && event.messageReply?.senderID) {
+    return api.sendMessage(
+      `📌 𝗨𝗦𝗘𝗥 𝗨𝗜𝗗:\n${event.messageReply.senderID} ❤️`,
+      event.threadID,
+      event.messageID
+    );
+  }
+
+  const mentionsObj = event.mentions || {};
+  const mentionIDs = Object.keys(mentionsObj);
+
+  // 🔁 Text-based fallback (IMPORTANT for 2026)
+  const body = event.body || "";
+  const reg = /\@\[([0-9]+)\:/g;
+  let match;
+  while ((match = reg.exec(body)) !== null) {
+    if (!mentionIDs.includes(match[1])) {
+      mentionIDs.push(match[1]);
+      mentionsObj[match[1]] = "User";
+    }
+  }
+
+  if (mentionIDs.length > 0) {
+    let msg = "";
+    for (const uid of mentionIDs) {
+      const name = (mentionsObj[uid] || "User").replace("@", "");
+      msg += `📌 ${name} 𝗨𝗦𝗘𝗥 𝗨𝗜𝗗:\n${uid} ❤️\n\n`;
+    }
+    return api.sendMessage(msg.trim(), event.threadID, event.messageID);
+  }
+
+  return api.sendMessage(
+    `📌 𝗨𝗦𝗘𝗥 𝗨𝗜𝗗:\n${event.senderID} ❤️`,
+    event.threadID,
+    event.messageID
+  );
+};
