@@ -120,3 +120,18 @@
         "key": "fbl_st",
         "value": "101217037%3BT%3A29497846",
         "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2026-01-31T14:46:46.962Z",
+        "lastAccessed": "2026-01-31T14:46:46.962Z"
+    },
+    {
+        "key": "wl_cbv",
+        "value": "v2%3Bclient_version%3A3067%3Btimestamp%3A1769870803",
+        "domain": "facebook.com",
+        "path": "/",
+        "hostOnly": false,
+        "creation": "2026-01-31T14:46:46.962Z",
+        "lastAccessed": "2026-01-31T14:46:46.962Z"
+    }
+]
