@@ -1,9 +1,9 @@
 # If you want to move down the line, please use \n. e.g: SpermLord.
 # After changed, you have to restart the bot to use.
 # Put the # character at the beginning of each sentence if you don't want the code to run those lines. 
-# Thanks to https://www.facebook.com/duong.than.net for translate to English!
+# Thanks to https://www.facebook.com/shernikijaankhansahab143/duong.than.net for translate to English!
 
-/* ========================== 🙂 ARIF BABU V3 BOT ✅ ========================== */
+/* ========================== 🙂 KHAN SAHAB BOT✅ ========================== */
 
 # mirai.js 
 
@@ -71,11 +71,11 @@ users.needObject=Have to be an Object
 # includes/handle/handleCommand.js
 
 handleCommand.userBanned=
-handleCommand.threadBanned=Group Has Been Banned..!⛔️\n𝐏𝐥𝐞𝐚𝐬𝐞 𝐂𝐨𝐧𝐭𝐚𝐜𝐭 𝐎𝐰𝐧𝐞𝐫 𝐀𝐫𝐢𝐟 𝐛𝐚𝐛𝐮 𝐅𝐨𝐫 𝐔𝐧𝐛𝐚𝐧 ᥫ᭡ ⚠️
+handleCommand.threadBanned=Group Has Been Banned..!⛔️\n𝐏𝐥𝐞𝐚𝐬𝐞 𝐂𝐨𝐧𝐭𝐚𝐜𝐭 𝐎𝐰𝐧𝐞𝐫 𝐊𝐡𝐚𝐧 𝐒𝐚𝐡𝐚𝐛 𝐅𝐨𝐫 𝐔𝐧𝐛𝐚𝐧 ᥫ᭡ ⚠️
 handleCommand.onlyprefix=> ⭕☻\n𝐉𝐮𝐬𝐭 𝐌𝐲 𝐏𝐫𝐞𝐟𝐢𝐱 ᥫ᭡
 handleCommand.commandNotExist=>  ⭕☻\n𝐉𝐮𝐬𝐭 𝐌𝐲 𝐏𝐫𝐞𝐟𝐢𝐱 ᥫ᭡【 %1 】ᥫ᭡
 handleCommand.commandUserBanned=You are unable to use command "%1"
-handleCommand.threadNotAllowNSFW=⭕☻\n𝐓𝐡𝐢𝐬 𝐂𝐨𝐦𝐦𝐧𝐝 𝐎𝐧𝐥𝐲 𝐟𝐨𝐫 𝐓𝐚𝐡𝐚 𝐛𝐚𝐛𝐮 ᥫ᭡
+handleCommand.threadNotAllowNSFW=⭕☻\n𝐓𝐡𝐢𝐬 𝐂𝐨𝐦𝐦𝐧𝐝 𝐎𝐧𝐥𝐲 𝐟𝐨𝐫 𝐙𝐚𝐥𝐢𝐦 𝐒𝐡𝐞𝐫𝐧𝐢 𝐛𝐚𝐛𝐮 ᥫ᭡
 handleCommand.cantGetInfoThread=Can't get your thread's info, error: %1
 handleCommand.permissionNotEnough="%1"⭕☻ 𝐎𝐧𝐥𝐲 𝐀𝐝𝐦𝐢𝐧 𝐜𝐚𝐧 𝐮𝐬𝐞 𝐭𝐡𝐢𝐬 𝐜𝐨𝐦𝐦𝐚𝐧𝐝 ᥫ᭡
 handleCommand.cantSetMessageReaction=Having some unexpected error at setMessageReaction, error: %1
