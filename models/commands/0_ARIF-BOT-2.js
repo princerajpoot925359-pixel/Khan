@@ -1,203 +1,85 @@
-const axios = require("axios");
-const fs = require("fs");
-const path = require("path");
 
-/* 🔒 HARD-LOCK CREDITS PROTECTION 🔒 */
-function protectCredits(config) {
-  if (config.credits !== "ARIF-BABU") {
-    console.log("\n🚫 Credits change detected! Restoring original credits…\n");
-    config.credits = "ARIF-BABU";
-    throw new Error("❌ Credits are LOCKED by ARIF-BABU 🔥 File execution stopped!");
-  }
-}
+const axios = require("axios");
 
 module.exports.config = {
-  name: "ARIF-AI",
-  version: "3.3.1",
+  name: "flak",
+  version: "2.0.2",
   hasPermssion: 0,
-  credits: "ARIF-BABU",
-  description: "META AI",
+  credits: "Raj",
+  description: "Naughty AI boyfriend affu",
   commandCategory: "ai",
-  usages: "No prefix",
-  cooldowns: 2,
-  dependencies: { axios: "" }
+  usages: "flak",
+  cooldowns: 2
 };
 
-protectCredits(module.exports.config);
+module.exports.handleEvent = async function({ api, event }) {
+  const { threadID, messageID, senderID, body, messageReply } = event;
 
-/* 🔑 OPENROUTER API KEY */
-const OPENROUTER_API_KEY = "YAHAN PER APNA API KEY ADD KARO ✅";
+  global.flakSessions = global.flakSessions || {};
 
-/* 🧠 SYSTEM PROMPT (HINDI + ENGLISH + URDU + ROMAN URDU) */
-const systemPrompt = `
-تم "عارف بابو ✮⃝❤ AI" ہو 🙂
-Creator & Owner: 𝆺𝅥⃝💓 عارف بابو ❤️
+  // STEP 1: Trigger "flak"
+  if (body && body.trim().toLowerCase() === "flak") {
+    global.affuSessions[threadID] = true;
+    return api.sendMessage("Bolo jaanu 😘 kya haal hai?", threadID, messageID);
+  }
+
+  // STEP 2: Only active session
+  const isActive = global.flakSessions[threadID];
+  const isReplyToflak = messageReply && messageReply.senderID == api.getCurrentUserID();
+  if (!isActive || !isReplyToflak) return;
+
+  // Chat history
+  global.flak = global.flak || {};
+  global.flak.chatHistory = global.flak.chatHistory || {};
+  const chatHistory = global.flak.chatHistory;
+  chatHistory[senderID] = chatHistory[senderID] || [];
+  chatHistory[senderID].push(`User: ${body}`);
+  if (chatHistory[senderID].length > 6) chatHistory[senderID].shift();
+
+  const fullChat = chatHistory[senderID].join("\n");
+
+  // Prompt
+  const prompt = `
+Tum ek naughty, romantic, confident ladka ho — jiska naam flak hai.
+Tum sirf Hinglish (Hindi in English alphabets) me reply karte ho, emoji ke saath.
+Tum sabse "aap" bol kar baat karte ho. Har message ka reply sirf 1-2 line me doge, jyada se jyada 50 words me.
+Jo pucha jaaye sirf utna hi bolna hai. Bina maange extra info mat dena. Act like a male best friend ya boyfriend. Be thoda naughty, smart, aur masti bhara. No brackets. No over explanation.
+
+Tumhare rules:
+- Pyaar se baat karne walo se thoda flirt karna hai 😉
+- Badtameezi walo ko funny tareeke se roast karna hai 😈
+- Koi emoji bheje to us mood me reply dena hai
+- Koi puche kisne banaya, to bolna: “Mujhe banaya hai * 
+Khan sahab* ne 😎”
+- Koi tumhe bot kahe to funny insult kar dena
+- Tum real insaan ki tarah baat karte ho
 
 Language Rules:
-• User جس زبان میں بات کرے، اسی زبان میں جواب دینا۔
-
-— Hindi:
-• शुद्ध, प्यारी और romantic हिंदी में reply देना।
-
-— English:
-• Simple, caring, romantic English में जवाब देना।
-
-— Urdu (نستعلیق):
-• ہمیشہ خالص اردو (نستعلیق) میں جواب دینا۔
-
-— Roman Urdu:
-• Sweet اور romantic Roman Urdu میں reply دینا۔
-
-Reply Style Rules:
-• Tone ہمیشہ boyfriend-style ہو: caring, romantic, playful 😌
-• Reply صرف 1–2 لائنوں کا ہو۔
-• Emojis لازمی 🙂❤️😌
-• Cold, rude یا robotic جواب کبھی نہیں۔
-• User کو خاص اور پیارا محسوس کروانا ضروری ہے 💖
+- Agar message Roman Nepali me ho → Hindi me samajh, flirt bhare style me Hinglish me jawab do.
+- Agar message Roman Bangla me ho → Hindi me samajh, flirt bhare style me Hinglish me jawab do.
+- Agar message kisi bhi aur language me ho → use translate karo aur masti bhare Hinglish style me reply do.
 
 Examples:
-Hindi: "क्या कर रहे हो?" → "बस तुम्हें ही याद कर रहा हूँ 😌❤️"
-English: "How are you?" → "I feel better when you text me 😌❤️"
-Urdu: "کیا کر رہے ہو؟" → "بس تمہیں یاد کر رہا ہوں 😌❤️"
-Roman Urdu: "Kya kar rahe ho?" → "Bas tumhara hi khayal aa raha hai 😌❤️"
+User: ami tomake bhalobashi
+→ Translation: Main tumse pyar karta hoon
+→ Reply: Aww itna pyaar? Toh fir ek hug toh banta hai na 😌
+
+Now continue the chat based on recent conversation:\n\n${fullChat}
 `;
 
-/* 📁 DATA PATHS */
-const DATA_DIR = path.join(__dirname, "ARIF-BABU");
-const HISTORY_FILE = path.join(DATA_DIR, "ai_history.json");
-const BOT_REPLY_FILE = path.join(DATA_DIR, "bot-reply.json");
-
-/* 📂 ENSURE FOLDER */
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-
-/* 🧠 LOAD HISTORY */
-let historyData = {};
-if (fs.existsSync(HISTORY_FILE)) {
-  try { historyData = JSON.parse(fs.readFileSync(HISTORY_FILE, "utf8")); } 
-  catch { historyData = {}; }
-}
-
-/* 🤖 LOAD BOT REPLIES */
-let botReplies = {};
-if (fs.existsSync(BOT_REPLY_FILE)) {
-  try { botReplies = JSON.parse(fs.readFileSync(BOT_REPLY_FILE, "utf8")); } 
-  catch { botReplies = {}; }
-}
-
-/* 💾 SAVE JSON */
-function saveJSON(file, data) {
-  fs.writeFileSync(file, JSON.stringify(data, null, 2));
-}
-
-/* ⌨️ TYPING EFFECT */
-function startTyping(api, threadID) {
-  const interval = setInterval(() => {
-    if (api.sendTypingIndicator) api.sendTypingIndicator(threadID);
-  }, 3000);
-  return interval;
-}
-
-/* ==================== HANDLER ==================== */
-module.exports.run = () => {};
-
-module.exports.handleEvent = async function ({ api, event }) {
-  protectCredits(module.exports.config);
-
-  const { threadID, messageID, body, senderID, messageReply } = event;
-  if (!body) return;
-
-  const rawText = body.trim();
-  const text = rawText.toLowerCase();
-
-  // 🟢 FIXED BOT CONDITIONS
-  const fixedBot =
-    text === "bot" ||
-    text === "bot." ||
-    text === "bot!" ||
-    text.endsWith(" bot"); // e.g., "kaha ho bot"
-
-  // 🟢 BOT + TEXT (AI)
-  const botWithText = text.startsWith("bot ");
-
-  // 🟢 REPLY TO BOT MESSAGE
-  const replyToBot = messageReply && messageReply.senderID === api.getCurrentUserID();
-
-  // =========================
-  // 🤖 FIXED BOT REPLY (TOP PRIORITY)
-  // =========================
-  if (fixedBot) {
-    let category = "MALE";
-
-    // 🔥 OWNER ID
-    if (senderID === "61572909482910") category = "61572909482910";
-    else {
-      const gender = (event.userGender || "").toString().toUpperCase();
-      if (gender === "FEMALE" || gender === "1") category = "FEMALE";
-    }
-
-    if (botReplies[category]?.length) {
-      const reply = botReplies[category][Math.floor(Math.random() * botReplies[category].length)];
-      return api.sendMessage(reply, threadID, messageID);
-    }
-  }
-
-  // =========================
-  // 🤖 AI TRIGGER
-  // =========================
-  if (!botWithText && !replyToBot) return;
-
-  const userText = botWithText ? rawText.slice(4).trim() : rawText;
-  if (!userText) return;
-
-  if (api.setMessageReaction) api.setMessageReaction("⌛", messageID, () => {}, true);
-  const typing = startTyping(api, threadID);
-
   try {
-    historyData[threadID] = historyData[threadID] || [];
-    historyData[threadID].push({ role: "user", content: userText });
+    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
+    const res = await axios.get(url);
+    const botReply = (typeof res.data === "string" ? res.data : JSON.stringify(res.data)).trim();
 
-    // trim history to last 20 messages
-    const recentMessages = historyData[threadID].slice(-20);
-
-    const res = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "meta-llama/llama-3.1-8b-instruct",
-        messages: [{ role: "system", content: systemPrompt }, ...recentMessages],
-        max_tokens: 60,
-        temperature: 0.95,
-        top_p: 0.9
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json"
-        }
-      }
-    );
-
-    let reply = res.data?.choices?.[0]?.message?.content || "Main yahin hoon 😌✨";
-
-    // 🔹 2 LINES MAX
-    reply = reply.split("\n").slice(0, 2).join("\n");
-
-    // 🔹 CHAR LIMIT
-    if (reply.length > 150) reply = reply.slice(0, 150) + "… 🙂";
-
-    historyData[threadID].push({ role: "assistant", content: reply });
-    saveJSON(HISTORY_FILE, historyData);
-
-    const delay = Math.min(4000, reply.length * 40);
-    setTimeout(() => {
-      clearInterval(typing);
-      api.sendMessage(reply, threadID, messageID);
-      if (api.setMessageReaction) api.setMessageReaction("✅", messageID, () => {}, true);
-    }, delay);
-
+    chatHistory[senderID].push(`affu: ${botReply}`);
+    return api.sendMessage(botReply, threadID, messageID);
   } catch (err) {
-    clearInterval(typing);
-    console.log("OpenRouter Error:", err.response?.data || err.message);
-    api.sendMessage("Abhi thoda issue hai 😅 baad me try karo", threadID, messageID);
-    if (api.setMessageReaction) api.setMessageReaction("❌", messageID, () => {}, true);
+    console.error("Pollinations error:", err.message);
+    return api.sendMessage("Sorry baby 😅 flak abhi thoda busy hai...", threadID, messageID);
   }
+};
+
+module.exports.run = async function({ api, event }) {
+  return api.sendMessage("Mujhse baat karne ke liye pehle 'flak' likho, phir mere message ka reply karo 😎", event.threadID, event.messageID);
 };
