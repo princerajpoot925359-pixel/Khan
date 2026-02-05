@@ -2,7 +2,7 @@ module.exports.config = {
   name: "help2",
   version: "1.0.4",
   hasPermssion: 0,
-  credits: "ARIF BABU",
+  credits: "KHAN SAHAB",
   description: "THIS BOT IS MR ARIF BABU",
   usePrefix: true,
   commandCategory: "system",
@@ -123,7 +123,7 @@ module.exports.run = async function ({ api, event, args, getText }) {
   // Footer
   msg += `PAGE [ ${page}/${maxPage} ]\n`;
   msg += `Type: ${prefix}help2 <command name>\n`;
-  msg += `BOT BY MR ARIF BABU 🙂✌️`;
+  msg += `BOT BY MR KHAN-SAHAB🙂✌️`;
 
   // Send message
   return api.sendMessage(msg, threadID, async (err, info) => {
