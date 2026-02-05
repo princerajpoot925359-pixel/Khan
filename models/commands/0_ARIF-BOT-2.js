@@ -1,85 +1,57 @@
-
 const axios = require("axios");
 
 module.exports.config = {
-  name: "flak",
-  version: "2.0.2",
+  name: "KHAN-SAHAB",
+  version: "1.0.0",
   hasPermssion: 0,
-  credits: "Raj",
-  description: "Naughty AI boyfriend affu",
+  credits: "ARIF-BABU",
+  description: "Simple AI using Llama 3.1 via OpenRouter",
   commandCategory: "ai",
-  usages: "flak",
-  cooldowns: 2
+  usages: "[text]",
+  cooldowns: 2,
 };
 
-module.exports.handleEvent = async function({ api, event }) {
-  const { threadID, messageID, senderID, body, messageReply } = event;
+/* 🔑 API CONFIGURATION */
+const OPENROUTER_API_KEY = "f69abaab-1f92-40be-b5c8-d056d483cee2"; // Apna API key yahan lagayein
+const SYSTEM_PROMPT = `Tum "KHAN-SAHAB" ho. Creator: KHAN-SAHAB. Tone: Caring, sweet, and short (1-2 lines).`;
 
-  global.flakSessions = global.flakSessions || {};
+module.exports.run = async function ({ api, event, args }) {
+  const { threadID, messageID, senderID } = event;
+  const prompt = args.join(" ");
 
-  // STEP 1: Trigger "flak"
-  if (body && body.trim().toLowerCase() === "flak") {
-    global.affuSessions[threadID] = true;
-    return api.sendMessage("Bolo jaanu 😘 kya haal hai?", threadID, messageID);
-  }
+  if (!prompt) return api.sendMessage("Boliye, main aapki kya madad kar sakti hoon? 😌❤️", threadID, messageID);
 
-  // STEP 2: Only active session
-  const isActive = global.flakSessions[threadID];
-  const isReplyToflak = messageReply && messageReply.senderID == api.getCurrentUserID();
-  if (!isActive || !isReplyToflak) return;
-
-  // Chat history
-  global.flak = global.flak || {};
-  global.flak.chatHistory = global.flak.chatHistory || {};
-  const chatHistory = global.flak.chatHistory;
-  chatHistory[senderID] = chatHistory[senderID] || [];
-  chatHistory[senderID].push(`User: ${body}`);
-  if (chatHistory[senderID].length > 6) chatHistory[senderID].shift();
-
-  const fullChat = chatHistory[senderID].join("\n");
-
-  // Prompt
-  const prompt = `
-Tum ek naughty, romantic, confident ladka ho — jiska naam flak hai.
-Tum sirf Hinglish (Hindi in English alphabets) me reply karte ho, emoji ke saath.
-Tum sabse "aap" bol kar baat karte ho. Har message ka reply sirf 1-2 line me doge, jyada se jyada 50 words me.
-Jo pucha jaaye sirf utna hi bolna hai. Bina maange extra info mat dena. Act like a male best friend ya boyfriend. Be thoda naughty, smart, aur masti bhara. No brackets. No over explanation.
-
-Tumhare rules:
-- Pyaar se baat karne walo se thoda flirt karna hai 😉
-- Badtameezi walo ko funny tareeke se roast karna hai 😈
-- Koi emoji bheje to us mood me reply dena hai
-- Koi puche kisne banaya, to bolna: “Mujhe banaya hai * 
-Khan sahab* ne 😎”
-- Koi tumhe bot kahe to funny insult kar dena
-- Tum real insaan ki tarah baat karte ho
-
-Language Rules:
-- Agar message Roman Nepali me ho → Hindi me samajh, flirt bhare style me Hinglish me jawab do.
-- Agar message Roman Bangla me ho → Hindi me samajh, flirt bhare style me Hinglish me jawab do.
-- Agar message kisi bhi aur language me ho → use translate karo aur masti bhare Hinglish style me reply do.
-
-Examples:
-User: ami tomake bhalobashi
-→ Translation: Main tumse pyar karta hoon
-→ Reply: Aww itna pyaar? Toh fir ek hug toh banta hai na 😌
-
-Now continue the chat based on recent conversation:\n\n${fullChat}
-`;
-
+  // Reaction and Typing indicator
+  if (api.setMessageReaction) api.setMessageReaction("⌛", messageID, () => {}, true);
+  
   try {
-    const url = `https://text.pollinations.ai/${encodeURIComponent(prompt)}`;
-    const res = await axios.get(url);
-    const botReply = (typeof res.data === "string" ? res.data : JSON.stringify(res.data)).trim();
+    const res = await axios.post(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        model: "meta-llama/llama-3.1-8b-instruct",
+        messages: [
+          { role: "system", content: SYSTEM_PROMPT },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 100,
+        temperature: 0.8
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${OPENROUTER_API_KEY}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
 
-    chatHistory[senderID].push(`affu: ${botReply}`);
-    return api.sendMessage(botReply, threadID, messageID);
+    let reply = res.data?.choices?.[0]?.message?.content || "Main abhi samajh nahi paa rahi hoon 😅";
+
+    api.sendMessage(reply, threadID, messageID);
+    if (api.setMessageReaction) api.setMessageReaction("✅", messageID, () => {}, true);
+
   } catch (err) {
-    console.error("Pollinations error:", err.message);
-    return api.sendMessage("Sorry baby 😅 flak abhi thoda busy hai...", threadID, messageID);
+    console.error("AI Error:", err.message);
+    api.sendMessage("Server busy hai, thodi der baad try karein. ❌", threadID, messageID);
+    if (api.setMessageReaction) api.setMessageReaction("❌", messageID, () => {}, true);
   }
-};
-
-module.exports.run = async function({ api, event }) {
-  return api.sendMessage("Mujhse baat karne ke liye pehle 'flak' likho, phir mere message ka reply karo 😎", event.threadID, event.messageID);
 };
